@@ -13,6 +13,11 @@ namespace GitStatSharp
             this.api = new GitApi(new CoreApi(gitBinFolderLocation, repoLocation));
         }
 
+        public GitAnalytics(CoreApi coreApi)
+        {
+            this.api = new GitApi(coreApi);
+        }
+
         public Dictionary<DateTime, int> CalculateDailyDelta(DateTime startDate, DateTime endDate, string baseBranch, string deltaBranch)
         {
 
@@ -25,7 +30,7 @@ namespace GitStatSharp
                 var delta = deltaCommits.Where(x => string.IsNullOrEmpty(x.Value) == false && x.Key >= item.Key).OrderBy(x => x.Key).FirstOrDefault();
                 var basec = baseCommits.Where(x => string.IsNullOrEmpty(x.Value) == false && x.Key >= item.Key).OrderBy(x => x.Key).FirstOrDefault();
 
-                if (delta.Key != null && basec.Key != null)
+                if (delta.Key != default(DateTime) && basec.Key != default(DateTime))
                 {
                     var result = api.DiffShortStat(delta.Value, basec.Value);
                     results.Add(item.Key, result.insertions + result.deletions);
