@@ -57,13 +57,12 @@ namespace GitStatSharp
         private Dictionary<DateTime, string> getLatestCommitsPerDayOverPeriod(DateTime startDate, DateTime endDate, string branch)
         {
             var commits = new Dictionary<DateTime, string>();
-
             DateTime currentDate = startDate;
+            api.CheckoutBranchOrCommit(branch);
+
             while (currentDate < endDate)
             {
-                api.CheckoutBranchOrCommit(branch);
                 commits.Add(currentDate, api.GetLatestCommitWithinTimespanFirstParent(currentDate, currentDate.AddDays(1)));
-
                 currentDate = currentDate.AddDays(1);
             }
 
