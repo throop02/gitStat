@@ -20,15 +20,30 @@ namespace GitStatSharp
 
         public Dictionary<DateTime, int> CalculateDailyDelta(DateTime startDate, DateTime endDate, string baseBranch, string deltaBranch)
         {
+            var baseCommits = new Dictionary<DateTime, string>();
+            var deltaCommits = new Dictionary<DateTime, string>();
+            var baseDayMultiplier = 0;
+            var deltaDayMultiplier = 0;
+            var multiplierMax = 25;
 
-            var deltaCommits = getLatestCommitsPerDayOverPeriod(startDate, endDate, deltaBranch);
-            var baseCommits = getLatestCommitsPerDayOverPeriod(startDate, endDate, baseBranch);
+            while (deltaCommits.Count(x => string.IsNullOrEmpty(x.Value) == false) == 0 && deltaDayMultiplier < multiplierMax)
+            {
+                deltaCommits = getLatestCommitsPerDayOverPeriod(startDate.AddDays((15 * deltaDayMultiplier) * -1), endDate, deltaBranch);
+                deltaDayMultiplier += 1;
+            }
+
+            while (baseCommits.Count(x => string.IsNullOrEmpty(x.Value) == false) == 0 && baseDayMultiplier < multiplierMax)
+            {
+                baseCommits = getLatestCommitsPerDayOverPeriod(startDate.AddDays((15 * baseDayMultiplier) * -1), endDate, baseBranch);
+                baseDayMultiplier += 1;
+            }
+
             var results = new Dictionary<DateTime, int>();
 
             foreach (var item in deltaCommits)
             {
-                var delta = deltaCommits.Where(x => string.IsNullOrEmpty(x.Value) == false && x.Key >= item.Key).OrderBy(x => x.Key).FirstOrDefault();
-                var basec = baseCommits.Where(x => string.IsNullOrEmpty(x.Value) == false && x.Key >= item.Key).OrderBy(x => x.Key).FirstOrDefault();
+                var delta = deltaCommits.Where(x => string.IsNullOrEmpty(x.Value) == false && x.Key <= item.Key).OrderByDescending(x => x.Key).FirstOrDefault();
+                var basec = baseCommits.Where(x => string.IsNullOrEmpty(x.Value) == false && x.Key <= item.Key).OrderByDescending(x => x.Key).FirstOrDefault();
 
                 if (delta.Key != default(DateTime) && basec.Key != default(DateTime))
                 {
